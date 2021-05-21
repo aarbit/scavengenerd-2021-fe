@@ -11,15 +11,10 @@ import org.w3c.xhr.FormData
 import react.*
 import react.dom.p
 import styled.styledButton
-import kotlin.js.Date
 
 @JsExport
 class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
     override fun RBuilder.render() {
-        p{
-            +"${Date.now()}"
-        }
-
         styledButton {
             attrs {
                 onClickFunction = {

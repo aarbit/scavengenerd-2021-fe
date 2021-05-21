@@ -5,7 +5,6 @@ import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import react.*
 import react.dom.p
-import kotlin.js.Date
 
 @JsExport
 class App : RComponent<RProps, AppState>() {
@@ -33,9 +32,6 @@ class App : RComponent<RProps, AppState>() {
             }
         }
         state.currentItem?.let { selectedItem ->
-            p{
-                +"Outside: ${Date.now()}"
-            }
             itemDetails {
                 userName = state.userName
                 item = selectedItem
