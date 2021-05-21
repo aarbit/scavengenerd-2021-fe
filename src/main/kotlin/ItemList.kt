@@ -7,7 +7,9 @@ import react.dom.span
 class ItemList: RComponent<ItemListProps, RState>() {
     override fun RBuilder.render() {
         // TODO Allow passing in of a sorting/filtering function
-        val sortedItems = props.items.sortedBy { it.name }.sortedBy { it.tier }
+        val sortedItems = props.items
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, {it.name}))
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, {it.tier}))
         for (item in sortedItems) {
             div {
                 attrs {
