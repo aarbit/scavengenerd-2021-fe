@@ -41,7 +41,7 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
                             val mainScope = MainScope()
                             mainScope.launch {
                                 val isOK = window.fetch(
-                                    "http://localhost:8081/entry/${entryId}",
+                                    "${rootUrl}/entry/${entryId}",
                                     RequestInit(method = "DELETE")
                                 )
                                     .await()
@@ -114,7 +114,7 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
             val mainScope = MainScope()
             mainScope.launch {
                 val isOK = window.fetch(
-                    "http://localhost:8081/entry/${entryId}",
+                    "${rootUrl}/entry/${entryId}",
                     RequestInit(method = "PATCH", body = formData)
                 )
                     .await()

@@ -36,7 +36,7 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
                     formData.append("userName", props.userName)
                     val mainScope = MainScope()
                     mainScope.launch {
-                        val response = window.fetch("http://localhost:8081/item/${props.item.id}", RequestInit(method = "POST", body = formData))
+                        val response = window.fetch("${rootUrl}/item/${props.item.id}", RequestInit(method = "POST", body = formData))
                             .await()
                             .json()
                             .await()
@@ -85,7 +85,7 @@ fun RBuilder.itemDetails(handler: ItemDetailsProps.() -> Unit): ReactElement {
 
 suspend fun fetchItemDetail(id: Int): ItemDetail {
     val response = window
-        .fetch("http://localhost:8081/item/$id")
+        .fetch("${rootUrl}/item/$id")
         .await()
         .json()
         .await()

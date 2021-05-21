@@ -67,7 +67,7 @@ class App : RComponent<RProps, AppState>() {
 
 suspend fun fetchItems(): List<ItemOverview> {
     val response = window
-        .fetch("http://localhost:8081/items")
+        .fetch("${rootUrl}/items")
         .await()
         .json()
         .await()
@@ -79,3 +79,6 @@ external interface AppState : RState {
     var currentItem: ItemOverview?
     var userName: String
 }
+
+val rootUrl = "http://localhost:5000"
+//val rootUrl = "http://scavengenerd2021-dev.eba-sswuq2m4.us-east-1.elasticbeanstalk.com"
