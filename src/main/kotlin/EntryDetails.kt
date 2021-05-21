@@ -1,7 +1,12 @@
 import kotlinx.browser.window
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.await
+import kotlinx.coroutines.launch
 import kotlinx.html.InputType
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
+import kotlinx.html.keyGen
+import kotlinx.html.pre
 import org.w3c.dom.HTMLInputElement
 import org.w3c.fetch.RequestInit
 import org.w3c.xhr.FormData
@@ -16,14 +21,7 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
             styledButton {
                 attrs {
                     onClickFunction = {
-                        for(entryId in state.checkedPhotos) {
-                            val formData = FormData()
-                            formData.append("status", "SUBMITTED")
-                            window.fetch(
-                                "http://localhost:8081/entry/${entryId}",
-                                RequestInit(method = "PATCH", body = formData)
-                            )
-                        }
+                        updateEntryStatus("SUBMITTED")
                     }
                 }
                 +"Submit"
@@ -31,14 +29,7 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
             styledButton {
                 attrs {
                     onClickFunction = {
-                        for(entryId in state.checkedPhotos) {
-                            val formData = FormData()
-                            formData.append("status", "APPROVED")
-                            window.fetch(
-                                "http://localhost:8081/entry/${entryId}",
-                                RequestInit(method = "PATCH", body = formData)
-                            )
-                        }
+                        updateEntryStatus("APPROVED")
                     }
                 }
                 +"Approve"
@@ -47,10 +38,21 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
                 attrs {
                     onClickFunction = {
                         for(entryId in state.checkedPhotos) {
-                            window.fetch(
-                                "http://localhost:8081/entry/${entryId}",
-                                RequestInit(method = "DELETE")
-                            )
+                            val mainScope = MainScope()
+                            mainScope.launch {
+                                val isOK = window.fetch(
+                                    "http://localhost:8081/entry/${entryId}",
+                                    RequestInit(method = "DELETE")
+                                )
+                                    .await()
+                                    .ok
+                                if(isOK) {
+                                    val entryIndex = props.entries.indexOfFirst { it.id == entryId }
+                                    setState {
+                                        props.entries.removeAt(entryIndex)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -104,11 +106,35 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
     override fun EntryDetailsState.init() {
         checkedPhotos = mutableListOf()
     }
+
+    private fun updateEntryStatus(status: String) {
+        for(entryId in state.checkedPhotos) {
+            val formData = FormData()
+            formData.append("status", status)
+            val mainScope = MainScope()
+            mainScope.launch {
+                val isOK = window.fetch(
+                    "http://localhost:8081/entry/${entryId}",
+                    RequestInit(method = "PATCH", body = formData)
+                )
+                    .await()
+                    .ok
+                if(isOK) {
+                    val entryIndex = props.entries.indexOfFirst { it.id == entryId }
+                    val entry = props.entries.get(entryIndex)
+                    entry.status = status
+                    setState {
+                        props.entries.set(entryIndex, entry)
+                    }
+                }
+            }
+        }
+    }
 }
 
 external interface EntryDetailsProps: RProps {
     var itemId: Int
-    var entries: List<ItemEntryDetail>
+    var entries: MutableList<ItemEntryDetail>
 }
 
 external interface EntryDetailsState: RState {

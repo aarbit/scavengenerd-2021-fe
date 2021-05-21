@@ -15,7 +15,7 @@ external interface ItemDetail {
 
 external interface ItemEntryDetail {
     val id: Int
-    val status: String
+    var status: String
     val userName: String
     val photo: ByteArray
 }

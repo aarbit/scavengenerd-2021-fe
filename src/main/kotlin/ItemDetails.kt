@@ -34,14 +34,22 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
                     val formData = FormData()
                     formData.append("photo", inputElement.files?.get(0) as Blob, inputElement.value)
                     formData.append("userName", props.userName)
-                    window.fetch("http://localhost:8081/item/${props.item.id}", RequestInit(method = "POST", body = formData))
-                    rerender()
+                    val mainScope = MainScope()
+                    mainScope.launch {
+                        val response = window.fetch("http://localhost:8081/item/${props.item.id}", RequestInit(method = "POST", body = formData))
+                            .await()
+                            .json()
+                            .await()
+                        setState {
+                            item.entries[item.entries.size] = response as ItemEntryDetail
+                        }
+                    }
                 }
             }
             if(item.entries.isNotEmpty()) {
                 entryDetails {
                     itemId = item.id
-                    entries = item.entries.toList()
+                    entries = item.entries.toMutableList()
                 }
             }
         }
@@ -49,9 +57,6 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
     }
 
     override fun componentDidMount() {
-        setState {
-            renderTrigger = ::rerender
-        }
         val mainScope = MainScope()
         mainScope.launch {
             val itemDetail = fetchItemDetail(props.item.id)
@@ -59,10 +64,6 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
                 details = itemDetail
             }
         }
-    }
-
-    fun rerender() {
-        this.forceUpdate()
     }
 }
 
@@ -74,7 +75,6 @@ external interface ItemDetailsProps: RProps {
 
 external interface ItemDetailsState: RState {
     var details: ItemDetail?
-    var renderTrigger: () -> Unit
 }
 
 fun RBuilder.itemDetails(handler: ItemDetailsProps.() -> Unit): ReactElement {
