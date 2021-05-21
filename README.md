@@ -6,6 +6,7 @@ Kotlin|JS React based front end for the 2021 ScavengeNerd season
 Run Gradle Task `kotlin browser>browserDevelopmentRun`
 
 ## TODO
+- Make URLs dynamic
 - Allow sorting of items
 - Fix data refresh issues
 - Show/hide list and details
