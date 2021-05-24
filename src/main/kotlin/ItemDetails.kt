@@ -2,6 +2,8 @@ import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
+import kotlinx.css.fontSize
+import kotlinx.css.rem
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLInputElement
 import org.w3c.fetch.RequestInit
@@ -10,29 +12,48 @@ import org.w3c.files.get
 import org.w3c.xhr.FormData
 import react.*
 import react.dom.p
+import styled.css
 import styled.styledButton
+
+external interface ItemDetailsProps: RProps {
+    var item: ItemOverview
+    var onClearSelection: () -> Unit
+    var userName: String
+}
+
+external interface ItemDetailsState: RState {
+    var details: ItemDetail?
+    var uploading: Boolean
+}
 
 @JsExport
 class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
     override fun RBuilder.render() {
         styledButton {
+            css {
+                fontSize = 2.rem
+            }
             attrs {
                 onClickFunction = {
                     props.onClearSelection()
                 }
-                +"X"
+                +"<- back"
             }
         }
-        state.details?.let { item ->
+        state.details?.let { itemDetail ->
             p {
-                +item.name
-                +item.tier
+                +itemDetail.name
+                +" "
+                +itemDetail.status
             }
             entryForm {
-                onSelectImage = {
-                    val inputElement = it.target as HTMLInputElement
+                uploading = state.uploading
+                onSelectImage = { fileInput ->
+                    setState {
+                        uploading = true
+                    }
                     val formData = FormData()
-                    formData.append("photo", inputElement.files?.get(0) as Blob, inputElement.value)
+                    formData.append("photo", fileInput.files?.get(0) as Blob, fileInput.value)
                     formData.append("userName", props.userName)
                     val mainScope = MainScope()
                     mainScope.launch {
@@ -41,15 +62,15 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
                             .json()
                             .await()
                         setState {
-                            item.entries[item.entries.size] = response as ItemEntryDetail
+                            uploading = false
+                            itemDetail.entries[itemDetail.entries.size] = response as ItemEntryDetail
                         }
                     }
                 }
             }
-            if(item.entries.isNotEmpty()) {
+            if(itemDetail.entries.isNotEmpty()) {
                 entryDetails {
-                    itemId = item.id
-                    entries = item.entries.toMutableList()
+                    item = itemDetail
                 }
             }
         }
@@ -67,22 +88,6 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
     }
 }
 
-external interface ItemDetailsProps: RProps {
-    var item: ItemOverview
-    var onClearSelection: () -> Unit
-    var userName: String
-}
-
-external interface ItemDetailsState: RState {
-    var details: ItemDetail?
-}
-
-fun RBuilder.itemDetails(handler: ItemDetailsProps.() -> Unit): ReactElement {
-    return child(ItemDetails::class) {
-        this.attrs(handler)
-    }
-}
-
 suspend fun fetchItemDetail(id: Int): ItemDetail {
     val response = window
         .fetch("${rootUrl}/item/$id")
@@ -90,4 +95,10 @@ suspend fun fetchItemDetail(id: Int): ItemDetail {
         .json()
         .await()
     return response as ItemDetail
+}
+
+fun RBuilder.itemDetails(handler: ItemDetailsProps.() -> Unit): ReactElement {
+    return child(ItemDetails::class) {
+        this.attrs(handler)
+    }
 }

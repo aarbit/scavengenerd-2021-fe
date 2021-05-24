@@ -14,6 +14,15 @@ import react.*
 import react.dom.*
 import styled.styledButton
 
+external interface EntryDetailsProps: RProps {
+    var item: ItemDetail
+    var onSubmit: () -> Unit
+}
+
+external interface EntryDetailsState: RState {
+    var checkedPhotos: MutableList<Int>
+}
+
 @JsExport
 class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
     override fun RBuilder.render() {
@@ -47,10 +56,8 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
                                     .await()
                                     .ok
                                 if(isOK) {
-                                    val entryIndex = props.entries.indexOfFirst { it.id == entryId }
-                                    setState {
-                                        props.entries.removeAt(entryIndex)
-                                    }
+                                    val entryIndex = props.item.entries.indexOfFirst { it.id == entryId }
+                                    props.item.entries = props.item.entries.removeAt(entryIndex)
                                 }
                             }
                         }
@@ -64,7 +71,7 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
             attrs {
                 name = ""
             }
-            for (entry in props.entries) {
+            for (entry in props.item.entries) {
                 div {
                     key = entry.id.toString()
                     input {
@@ -74,10 +81,10 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
                             onChangeFunction = {
                                 setState {
                                     if ((it.target as HTMLInputElement).checked) {
-                                        state.checkedPhotos.add(entry.id)
+                                        checkedPhotos.add(entry.id)
                                     }
                                     else {
-                                        state.checkedPhotos.remove(entry.id)
+                                        checkedPhotos.remove(entry.id)
                                     }
                                 }
                             }
@@ -120,25 +127,24 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
                     .await()
                     .ok
                 if(isOK) {
-                    val entryIndex = props.entries.indexOfFirst { it.id == entryId }
-                    val entry = props.entries.get(entryIndex)
+                    val entryIndex = props.item.entries.indexOfFirst { it.id == entryId }
+                    val entry = props.item.entries.get(entryIndex)
                     entry.status = status
-                    setState {
-                        props.entries.set(entryIndex, entry)
-                    }
+                    props.item.entries[entryIndex] = entry
                 }
             }
         }
     }
 }
 
-external interface EntryDetailsProps: RProps {
-    var itemId: Int
-    var entries: MutableList<ItemEntryDetail>
-}
-
-external interface EntryDetailsState: RState {
-    var checkedPhotos: MutableList<Int>
+fun <T: Any> Array<T>.removeAt(index: Int): Array<T> {
+    val list = mutableListOf<T>()
+    for (i in 0 until this.size) {
+        if(i != index) {
+            list.add(this[i])
+        }
+    }
+    return list.toTypedArray()
 }
 
 fun RBuilder.entryDetails(handler: EntryDetailsProps.() -> Unit): ReactElement {

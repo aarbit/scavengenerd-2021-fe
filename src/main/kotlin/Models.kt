@@ -9,8 +9,8 @@ external interface ItemDetail {
     val id: Int
     val name: String
     val tier: String
-    val status: String
-    val entries: Array<ItemEntryDetail>
+    var status: String
+    var entries: Array<ItemEntryDetail>
 }
 
 external interface ItemEntryDetail {

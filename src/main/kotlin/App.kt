@@ -1,50 +1,61 @@
 import kotlinx.browser.localStorage
-import kotlinx.browser.window
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.await
-import kotlinx.coroutines.launch
+import kotlinx.css.*
 import react.*
 import react.dom.p
+import styled.css
+import styled.styledDiv
+import styled.styledP
+
+external interface AppState : RState {
+    var currentItem: ItemOverview?
+    var userName: String
+}
 
 @JsExport
 class App : RComponent<RProps, AppState>() {
     override fun RBuilder.render() {
-        p {
-            +"ScavengeNerd 2021"
-            userForm {
-                userName = state.userName
-                onUserNameChange = { newName ->
-                    setState {
-                        userName = newName
-                    }
-                }
-                onSaveUserName = {
-                    localStorage.setItem("userName", state.userName)
-                }
+        styledDiv {
+            css {
+                fontFamily = "sans-serif"
+                fontSize = 3.vh
             }
-        }
-        itemList {
-            items = state.items
-            onSelectItem = { item ->
-                setState {
-                    currentItem = item
+            styledP {
+                css {
+                    textAlign = TextAlign.center
                 }
-            }
-        }
-        state.currentItem?.let { selectedItem ->
-            itemDetails {
-                userName = state.userName
-                item = selectedItem
-                onClearSelection = {
-                    val mainScope = MainScope()
-                    mainScope.launch {
-                        val fetchedItems = fetchItems()
+                +"ScavengeNerd 2021"
+           }
+            styledDiv {
+                css {
+                    float = Float.right
+                }
+                userForm {
+                    userName = state.userName
+                    onUserNameChange = { newName ->
                         setState {
-                            items = fetchedItems
+                            userName = newName
                         }
                     }
+                    onSaveUserName = {
+                        localStorage.setItem("userName", state.userName)
+                    }
+                }
+            }
+
+            state.currentItem?.let { selectedItem ->
+                itemDetails {
+                    userName = state.userName
+                    item = selectedItem
+                    onClearSelection = {
+                        setState {
+                            currentItem = null
+                        }
+                    }
+                }
+            } ?: itemList {
+                onSelectItem = { item ->
                     setState {
-                        currentItem = null
+                        currentItem = item
                     }
                 }
             }
@@ -52,33 +63,9 @@ class App : RComponent<RProps, AppState>() {
     }
 
     override fun AppState.init() {
-        items = listOf()
-
-        val mainScope = MainScope()
-        mainScope.launch {
-            val fetchedItems = fetchItems()
-            setState {
-                items = fetchedItems
-            }
-        }
-        userName = localStorage.getItem("userName")?:"sss"
+        userName = localStorage.getItem("userName")?:""
     }
 }
 
-suspend fun fetchItems(): List<ItemOverview> {
-    val response = window
-        .fetch("${rootUrl}/items")
-        .await()
-        .json()
-        .await()
-    return (response as Array<ItemOverview>).toList()
-}
-
-external interface AppState : RState {
-    var items: List<ItemOverview>
-    var currentItem: ItemOverview?
-    var userName: String
-}
-
-val rootUrl = "http://localhost:5000"
-//val rootUrl = "http://scavengenerd2021-dev.eba-sswuq2m4.us-east-1.elasticbeanstalk.com"
+//val rootUrl = "http://localhost:5000"
+val rootUrl = "http://scavengenerd2021-dev.eba-sswuq2m4.us-east-1.elasticbeanstalk.com"
