@@ -9,5 +9,4 @@ Run Gradle Task `kotlin browser>browserDevelopmentRun`
 - Make URLs dynamic
 - Allow sorting of items
 - Fix data refresh issues
-- Show/hide list and details
 - Make things pretty
