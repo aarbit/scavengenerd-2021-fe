@@ -7,7 +7,9 @@ import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
 import kotlinx.html.keyGen
 import kotlinx.html.pre
+import kotlinx.html.submitInput
 import org.w3c.dom.HTMLInputElement
+import org.w3c.fetch.Headers
 import org.w3c.fetch.RequestInit
 import org.w3c.xhr.FormData
 import react.*
@@ -30,7 +32,7 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
             styledButton {
                 attrs {
                     onClickFunction = {
-                        updateEntryStatus("SUBMITTED")
+                        submitEntries()
                     }
                 }
                 +"Submit"
@@ -130,6 +132,28 @@ class EntryDetails: RComponent<EntryDetailsProps, EntryDetailsState>() {
                     val entryIndex = props.item.entries.indexOfFirst { it.id == entryId }
                     val entry = props.item.entries.get(entryIndex)
                     entry.status = status
+                    props.item.entries[entryIndex] = entry
+                }
+            }
+        }
+    }
+
+    private fun submitEntries() {
+        val mainScope = MainScope()
+        mainScope.launch {
+            val headers = Headers()
+            headers.append("Content-Type","application/json")
+            val isOK = window.fetch(
+                "${rootUrl}/entries",
+                RequestInit(method = "PATCH", body = state.checkedPhotos, headers = headers)
+            )
+                .await()
+                .ok
+            if(isOK) {
+                for(entryId in state.checkedPhotos) {
+                    val entryIndex = props.item.entries.indexOfFirst { it.id == entryId }
+                    val entry = props.item.entries.get(entryIndex)
+                    entry.status = "SUBMITTED"
                     props.item.entries[entryIndex] = entry
                 }
             }
