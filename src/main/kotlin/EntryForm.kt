@@ -1,10 +1,13 @@
+import kotlinx.css.*
 import kotlinx.html.InputType
 import kotlinx.html.js.onChangeFunction
 import org.w3c.dom.HTMLInputElement
-import org.w3c.dom.events.Event
 import react.*
-import react.dom.input
 import react.dom.p
+import react.dom.span
+import styled.css
+import styled.styledInput
+import styled.styledLabel
 
 external interface EntryFormProps: RProps {
     var onSelectImage: (HTMLInputElement) -> Unit
@@ -19,12 +22,24 @@ class EntryForm: RComponent<EntryFormProps, RState>() {
                 +"UPLOADING!"
             }
         } else {
-            input {
-                attrs {
-                    type = InputType.file
-                    onChangeFunction = { event ->
-                        props.onSelectImage(event.target as HTMLInputElement)
+            styledLabel {
+                css {
+                    +ScavengenerdStyles.pushButton
+                }
+                styledInput {
+                    css {
+                        +ScavengenerdStyles.goAwayThing
                     }
+                    attrs {
+                        type = InputType.file
+                        onChangeFunction = { event ->
+                            props.onSelectImage(event.target as HTMLInputElement)
+                        }
+                        accept = "image/*"
+                    }
+                }
+                span {
+                    +"Add photo."
                 }
             }
         }
