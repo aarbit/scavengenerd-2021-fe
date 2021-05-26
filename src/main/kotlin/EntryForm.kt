@@ -22,13 +22,9 @@ class EntryForm: RComponent<EntryFormProps, RState>() {
             }
         } else {
             styledLabel {
-                css {
-                    +ScavengenerdStyles.pushButton
-                }
+                css(ScavengenerdStyles.pushButton)
                 styledInput {
-                    css {
-                        +ScavengenerdStyles.goAwayThing
-                    }
+                    css(ScavengenerdStyles.goAwayThing)
                     attrs {
                         type = InputType.file
                         onChangeFunction = { event ->
@@ -38,7 +34,7 @@ class EntryForm: RComponent<EntryFormProps, RState>() {
                     }
                 }
                 span {
-                    +"Add photo."
+                    +"Add photo ->"
                 }
             }
         }

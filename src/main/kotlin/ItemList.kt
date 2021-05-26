@@ -76,9 +76,7 @@ class ItemList: RComponent<ItemListProps, ItemListState>() {
                             }
                             +" "
                             styledSpan {
-                                css {
-                                    fontSize = 1.vh
-                                }
+                                css(ScavengenerdStyles.smallerText)
                                 +item.status
                             }
                         }

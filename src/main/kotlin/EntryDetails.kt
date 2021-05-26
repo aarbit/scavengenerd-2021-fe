@@ -3,8 +3,11 @@ import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLInputElement
 import react.*
-import react.dom.*
-import styled.styledButton
+import react.dom.div
+import react.dom.form
+import react.dom.img
+import react.dom.key
+import styled.*
 
 external interface EntryDetailsProps: RProps {
     var item: ItemDetail
@@ -18,26 +21,38 @@ external interface EntryDetailsProps: RProps {
 class EntryDetails: RComponent<EntryDetailsProps, RState>() {
     override fun RBuilder.render() {
         div {
-            styledButton {
-                attrs {
-                    onClickFunction = {
-                        props.onSubmit()
+            styledLabel {
+                css(ScavengenerdStyles.pushButton)
+                styledButton {
+                    css(ScavengenerdStyles.goAwayThing)
+                    attrs {
+                        onClickFunction = {
+                            props.onSubmit()
+                        }
                     }
                 }
                 +"Submit"
             }
-            styledButton {
-                attrs {
-                    onClickFunction = {
-                        props.onApprove()
+            styledLabel {
+                css(ScavengenerdStyles.pushButton)
+                styledButton {
+                    css(ScavengenerdStyles.goAwayThing)
+                    attrs {
+                        onClickFunction = {
+                            props.onApprove()
+                        }
                     }
                 }
                 +"Approve"
             }
-            styledButton {
-                attrs {
-                    onClickFunction = {
-                        props.onDelete()
+            styledLabel {
+                css(ScavengenerdStyles.pushButton)
+                styledButton {
+                    css(ScavengenerdStyles.goAwayThing)
+                    attrs {
+                        onClickFunction = {
+                            props.onDelete()
+                        }
                     }
                 }
                 +"Delete"
@@ -51,7 +66,8 @@ class EntryDetails: RComponent<EntryDetailsProps, RState>() {
             for (entry in props.item.entries) {
                 div {
                     key = entry.id.toString()
-                    input {
+                    styledInput {
+                        css(ScavengenerdStyles.checkBox)
                         attrs {
                             type = InputType.checkBox
                             key = entry.id.toString()
@@ -61,18 +77,20 @@ class EntryDetails: RComponent<EntryDetailsProps, RState>() {
                             }
                         }
                     }
-                    span {
+                    styledSpan {
+                        css(ScavengenerdStyles.smallerText)
                         +entry.status
                     }
                     +" "
-                    span {
+                    styledSpan {
+                        css(ScavengenerdStyles.smallerText)
                         +entry.userName
                     }
                     div {
                         img {
                             attrs {
                                 src = "data:image/jpeg;base64,${entry.photo}"
-                                width = "25%"
+                                width = "75%"
                             }
                         }
 

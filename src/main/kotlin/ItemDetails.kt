@@ -2,8 +2,6 @@ import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
-import kotlinx.css.fontSize
-import kotlinx.css.rem
 import kotlinx.html.js.onClickFunction
 import org.w3c.fetch.Headers
 import org.w3c.fetch.RequestInit
@@ -14,6 +12,8 @@ import react.*
 import react.dom.p
 import styled.css
 import styled.styledButton
+import styled.styledLabel
+import styled.styledSpan
 
 external interface ItemDetailsProps: RProps {
     var item: ItemOverview
@@ -30,22 +30,28 @@ external interface ItemDetailsState: RState {
 @JsExport
 class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
     override fun RBuilder.render() {
-        styledButton {
-            css {
-                fontSize = 2.rem
-            }
-            attrs {
-                onClickFunction = {
-                    props.onClearSelection()
+        styledLabel {
+            css(ScavengenerdStyles.pushButton)
+            styledButton {
+                css(ScavengenerdStyles.goAwayThing)
+                attrs {
+                    onClickFunction = {
+                        props.onClearSelection()
+                    }
+
                 }
-                +"<- back"
             }
+            +"<- back"
         }
         state.details?.let { itemDetail ->
             p {
                 +itemDetail.name
                 +" "
-                +itemDetail.status
+                styledSpan {
+                    css(ScavengenerdStyles.smallerText)
+                    +itemDetail.status
+                }
+
             }
             entryForm {
                 uploading = state.uploading
