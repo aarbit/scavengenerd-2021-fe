@@ -26,7 +26,9 @@ class App : RComponent<RProps, AppState>() {
            }
             styledDiv {
                 css {
-                    float = Float.right
+                    position = Position.absolute
+                    top = 10.px
+                    right = 10.px
                 }
                 userForm {
                     userName = state.userName
