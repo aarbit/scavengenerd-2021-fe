@@ -5,7 +5,7 @@ import kotlinx.coroutines.launch
 import kotlinx.css.fontSize
 import kotlinx.css.rem
 import kotlinx.html.js.onClickFunction
-import org.w3c.dom.HTMLInputElement
+import org.w3c.fetch.Headers
 import org.w3c.fetch.RequestInit
 import org.w3c.files.Blob
 import org.w3c.files.get
@@ -24,6 +24,7 @@ external interface ItemDetailsProps: RProps {
 external interface ItemDetailsState: RState {
     var details: ItemDetail?
     var uploading: Boolean
+    var checkedPhotos: MutableList<Int>
 }
 
 @JsExport
@@ -71,6 +72,88 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
             if(itemDetail.entries.isNotEmpty()) {
                 entryDetails {
                     item = itemDetail
+                    onCheckPhoto = { checkbox, entry ->
+                        setState {
+                            if (checkbox.checked) {
+                                checkedPhotos.add(entry.id)
+                            }
+                            else {
+                                checkedPhotos.remove(entry.id)
+                            }
+                        }
+                    }
+                    onSubmit = {
+                        val mainScope = MainScope()
+                        mainScope.launch {
+                            val headers = Headers()
+                            headers.append("Content-Type", "application/json")
+                            val isOK = window.fetch(
+                                "${rootUrl}/entries",
+                                RequestInit(method = "PATCH", body = state.checkedPhotos, headers = headers)
+                            )
+                                .await()
+                                .ok
+                            if(isOK) {
+                                for (entryId in state.checkedPhotos) {
+                                    state.details?.let { itemDetail ->
+                                        val entryIndex = itemDetail.entries.indexOfFirst { it.id == entryId }
+                                        val entry = itemDetail.entries.get(entryIndex)
+                                        entry.status = "SUBMITTED"
+                                        setState {
+                                            itemDetail.entries[entryIndex] = entry
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    onApprove = {
+                        for(entryId in state.checkedPhotos) {
+                            val formData = FormData()
+                            formData.append("status", "APPROVED")
+                            val mainScope = MainScope()
+                            mainScope.launch {
+                                val isOK = window.fetch(
+                                    "${rootUrl}/entry/${entryId}",
+                                    RequestInit(method = "PATCH", body = formData)
+                                )
+                                    .await()
+                                    .ok
+                                if(isOK) {
+                                    state.details?.let { itemDetail ->
+                                        val entryIndex = itemDetail.entries.indexOfFirst { it.id == entryId }
+                                        val entry = itemDetail.entries.get(entryIndex)
+                                        entry.status = "APPROVED"
+                                        setState {
+                                            itemDetail.entries[entryIndex] = entry
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    onDelete = {
+                        for(entryId in state.checkedPhotos) {
+                            val mainScope = MainScope()
+                            mainScope.launch {
+                                val isOK = window.fetch(
+                                    "${rootUrl}/entry/${entryId}",
+                                    RequestInit(method = "DELETE")
+                                )
+                                    .await()
+                                    .ok
+                                if(isOK) {
+                                    state.details?.let { itemDetail ->
+                                        val entryIndex = itemDetail.entries.indexOfFirst { it.id == entryId }
+                                        setState {
+                                            itemDetail.entries = itemDetail.entries.removeAt(entryIndex)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -85,6 +168,9 @@ class ItemDetails: RComponent<ItemDetailsProps, ItemDetailsState>() {
                 details = itemDetail
             }
         }
+        setState {
+            checkedPhotos = mutableListOf()
+        }
     }
 }
 
@@ -95,6 +181,16 @@ suspend fun fetchItemDetail(id: Int): ItemDetail {
         .json()
         .await()
     return response as ItemDetail
+}
+
+fun <T: Any> Array<T>.removeAt(index: Int): Array<T> {
+    val list = mutableListOf<T>()
+    for (i in 0 until this.size) {
+        if(i != index) {
+            list.add(this[i])
+        }
+    }
+    return list.toTypedArray()
 }
 
 fun RBuilder.itemDetails(handler: ItemDetailsProps.() -> Unit): ReactElement {
