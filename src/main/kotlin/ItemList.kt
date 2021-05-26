@@ -5,9 +5,7 @@ import kotlinx.coroutines.launch
 import kotlinx.css.*
 import kotlinx.html.js.onClickFunction
 import react.*
-import react.dom.div
 import react.dom.span
-import react.dom.ul
 import styled.*
 
 external interface ItemListProps: RProps {

@@ -1,7 +1,6 @@
 import kotlinx.browser.localStorage
 import kotlinx.css.*
 import react.*
-import react.dom.p
 import styled.css
 import styled.styledDiv
 import styled.styledP

@@ -1,4 +1,3 @@
-import kotlinx.browser.window
 import kotlinx.html.InputType
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
