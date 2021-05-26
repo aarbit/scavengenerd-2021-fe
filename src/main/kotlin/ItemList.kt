@@ -3,7 +3,11 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import kotlinx.css.*
+import kotlinx.html.InputType
+import kotlinx.html.fileInput
+import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
+import org.w3c.dom.HTMLInputElement
 import react.*
 import react.dom.span
 import styled.*
@@ -14,16 +18,73 @@ external interface ItemListProps: RProps {
 
 external interface ItemListState: RState {
     var items: List<ItemOverview>?
+    var filterInput: String?
+    var isOnlyNotFound: Boolean
 }
 
 @JsExport
 class ItemList: RComponent<ItemListProps, ItemListState>() {
     override fun RBuilder.render() {
+        styledDiv {
+            css {
+                textAlign = TextAlign.center
+            }
+            styledInput {
+                css {
+                    fontSize = 3.vh
+                    height = 3.vh
+                }
+                attrs {
+                    type = InputType.search
+                    onChangeFunction = {
+                        setState {
+                            filterInput = (it.target as HTMLInputElement).value
+                        }
+                    }
+                }
+            }
+
+            styledLabel {
+                css {
+                    +ScavengenerdStyles.pushButton
+                    if (state.isOnlyNotFound) {
+                        backgroundColor = Color.maroon
+                    } else {
+                        backgroundColor = Color.lightGray
+                    }
+                }
+                styledInput {
+                    css(ScavengenerdStyles.goAwayThing)
+                    attrs {
+                        type = InputType.checkBox
+                        onChangeFunction = {
+                            setState {
+                                isOnlyNotFound = (it.target as HTMLInputElement).checked
+                            }
+                        }
+                    }
+                }
+                styledSpan {
+                    +"Not Found"
+                }
+            }
+        }
+
         state.items?.let { items ->
             // TODO Allow passing in of a sorting/filtering function
             val sortedItems = items
                 .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.name }))
                 .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.tier }))
+                .filter { itemOverview ->
+                    state.filterInput?.let { itemOverview.name.toLowerCase().contains(it.toLowerCase()) }?:true
+                }
+                .filter { itemOverview ->
+                    if(state.isOnlyNotFound) {
+                        itemOverview.status == "NOT_FOUND"
+                    } else {
+                        true
+                    }
+                }
             styledDiv {
                 css {
                     width = 100.pct
